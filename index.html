@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Página de bienvenida</title>
+
+  <style>
+    /* ============================================================
+       VARIABLES Y ESTILOS TEMA OSCURO
+       ============================================================ */
+    :root {
+      --fondo: #0a0e14;
+      --tarjeta: #2d3748;
+      --borde: #4a5568;
+      --texto: #ffffff;
+      --texto-suave: #cbd5e1;
+      --primario: #4a5568;
+      --primario-oscuro: #319795;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px 12px;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--fondo);
+      color: var(--texto);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .contenedor { width: 100%; max-width: 520px; }
+
+    .tarjeta {
+      background: var(--tarjeta);
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      padding: 24px 20px;
+      margin-top: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+      text-align: center;
+    }
+
+    .emoji-grande { font-size: 46px; margin-bottom: 4px; }
+
+    .titulo-bienvenida {
+      margin: 6px 0 8px;
+      font-size: 24px;
+      color: #63b3ed;
+    }
+
+    .usuario-arroba {
+      display: inline-block;
+      background: #1a202c;
+      border: 1px solid var(--borde);
+      color: #319795;
+      font-weight: 700;
+      font-size: 20px;
+      padding: 6px 18px;
+      border-radius: 999px;
+      margin: 4px 0 8px;
+    }
+
+    .texto-bienvenida {
+      font-size: 14px;
+      color: var(--texto-suave);
+      margin: 6px 0 10px;
+    }
+
+    .tabla-datos {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 14px;
+      text-align: left;
+    }
+    .tabla-datos th,
+    .tabla-datos td {
+      border: 1px solid var(--borde);
+      padding: 8px 10px;
+    }
+    .tabla-datos th { background: #1a202c; color: #ffffff; width: 42%; }
+    .tabla-datos td { background: #ffffff; color: #000000; }
+
+    .boton {
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: 8px;
+      background: var(--primario);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 16px;
+    }
+    .boton:hover { background: var(--primario-oscuro); }
+
+    /* Estilo de la firma */
+    .credito {
+      margin-top: 18px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--borde);
+      font-size: 13px;
+      font-style: italic;
+      color: var(--texto-suave);
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <main class="contenedor">
+
+    <section class="tarjeta" id="tarjeta-bienvenida">
+      <div class="emoji-grande">🎉</div>
+
+      <h1 class="titulo-bienvenida">
+        ¡Hola, <span class="usuario-arroba" id="salida-usuario">@…</span>!
+      </h1>
+
+      <p class="texto-bienvenida">
+        La validación de tu información fue correcta.
+        Tu cuenta quedó guardada con estos datos:
+      </p>
+
+      <table class="tabla-datos" id="tabla-usuario">
+        <tbody id="cuerpo-usuario"></tbody>
+      </table>
+
+      <button type="button" class="boton" id="btn-salir">Cerrar sesión</button>
+
+      <p class="credito">Trabajo realizado por Juan David Rojas</p>
+    </section>
+
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      const $ = (selector) => document.querySelector(selector);
+
+      function leerJSON(clave, almacen) {
+        try {
+          const bruto = almacen.getItem(clave);
+          return bruto ? JSON.parse(bruto) : null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function volverAlRegistro() {
+        window.location.replace("registro.html#login");
+      }
+
+      function pintarUsuario(usuario) {
+        $("#salida-usuario").textContent = "@" + usuario.usuario;
+
+        const filas = [
+          ["Nombre", usuario.nombre],
+          ["Usuario", usuario.usuario],
+          ["Correo", usuario.correo],
+          ["Teléfono", usuario.telefono],
+          ["Nacimiento", usuario.fecha],
+          ["Documento", usuario.documento]
+        ];
+        const cuerpo = $("#cuerpo-usuario");
+        filas.forEach((fila) => {
+          const tr = document.createElement("tr");
+          const th = document.createElement("th");
+          const td = document.createElement("td");
+          th.textContent = fila[0];
+          td.textContent = fila[1];
+          tr.appendChild(th);
+          tr.appendChild(td);
+          cuerpo.appendChild(tr);
+        });
+      }
+
+      const sesion = leerJSON("demo_sesion", sessionStorage);
+      if (!sesion || !sesion.correo) {
+        volverAlRegistro();
+        return;
+      }
+
+      const usuarios = leerJSON("demo_usuarios", localStorage) || [];
+      const usuario = usuarios.find((u) => u.correo === sesion.correo);
+      if (!usuario) {
+        sessionStorage.removeItem("demo_sesion");
+        volverAlRegistro();
+        return;
+      }
+
+      pintarUsuario(usuario);
+
+      $("#btn-salir").addEventListener("click", () => {
+        sessionStorage.removeItem("demo_sesion");
+        window.location.href = "registro.html#login";
+      });
+    })();
+  </script>
+</body>
+</html>

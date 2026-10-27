@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro e inicio de sesión</title>
+
+  <style>
+    :root {
+      --fondo: #0a0e14;
+      --tarjeta: #2d3748;
+      --borde: #4a5568;
+      --texto: #ffffff;
+      --texto-suave: #cbd5e1;
+      --primario: #4a5568;
+      --primario-oscuro: #319795;
+      --peligro: #fc8181;
+      --exito: #38a169;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 24px 12px;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      background: var(--fondo);
+      color: var(--texto);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+    }
+
+    .contenedor { width: 100%; max-width: 900px; }
+
+    .tarjeta {
+      background: var(--tarjeta);
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 12px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    }
+
+    .vista { display: none; }
+    .vista.activa { display: block; }
+
+    /* Pestañas */
+    .pestanas { display: flex; gap: 8px; }
+    .pestana {
+      flex: 1;
+      padding: 12px;
+      border: 1px solid var(--borde);
+      background: #ffffff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 15px;
+      font-weight: 600;
+      color: #000000 !important;
+    }
+    .pestana.activo {
+      background: var(--primario) !important;
+      border-color: var(--primario) !important;
+      color: #ffffff !important;
+    }
+
+    /* GRID 3 COLUMNAS */
+    #form-registro {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px 16px;
+    }
+
+    .campo { margin-bottom: 0; }
+    .campo label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #ffffff;
+    }
+
+    .campo input[type="text"],
+    .campo input[type="email"],
+    .campo input[type="password"],
+    .campo input[type="tel"],
+    .campo input[type="date"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--borde);
+      border-radius: 8px;
+      font-size: 15px;
+      outline: none;
+      background: #ffffff;
+      color: #000000 !important;
+    }
+    .campo input:focus {
+      border-color: var(--primario-oscuro);
+      box-shadow: 0 0 0 3px rgba(49, 151, 149, 0.3);
+    }
+    .campo input.invalido { border-color: #e53e3e; }
+
+    .campo .error {
+      display: block;
+      color: var(--peligro);
+      font-size: 12px;
+      margin-top: 4px;
+      min-height: 15px;
+    }
+
+    #form-registro .fila-check,
+    #form-registro button[type="submit"] {
+      grid-column: 1 / -1;
+    }
+
+    .fila-check { display: flex; align-items: flex-start; gap: 8px; margin-top: 6px; }
+    .fila-check input { margin-top: 3px; }
+    .fila-check label { font-weight: 400; color: #ffffff; }
+
+    .con-boton { position: relative; }
+    .con-boton input { padding-right: 42px; }
+    .btn-ver {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      font-size: 15px;
+      padding: 4px 6px;
+      color: #4a5568;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .medidor { margin-top: 6px; }
+    .medidor-barra {
+      height: 6px;
+      background: #4a5568;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .medidor-relleno {
+      height: 100%;
+      width: 0;
+      background: transparent;
+      transition: width 0.25s ease, background 0.25s ease;
+    }
+    .medidor-texto { font-size: 11px; color: var(--texto-suave); display: block; margin-top: 2px; }
+
+    .boton {
+      width: 100%;
+      padding: 11px;
+      border: none;
+      border-radius: 8px;
+      background: var(--primario);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+    .boton:hover { background: var(--primario-oscuro); }
+    .boton-secundario {
+      background: #2d3748;
+      color: #ffffff;
+      border: 1px solid var(--borde);
+    }
+    .boton-secundario:hover { background: #4a5568; }
+
+    .enlace {
+      background: none;
+      border: none;
+      color: #63b3ed;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 0;
+      text-decoration: underline;
+    }
+    .acciones-secundarias {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .alerta {
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-top: 10px;
+    }
+    .alerta.exito { background: #22543d; color: #c6f6d5; border: 1px solid #38a169; }
+    .alerta.info { background: #2a4365; color: #bee3f8; border: 1px solid #3182ce; }
+    .alerta.peligro { background: #742a2a; color: #fed7d7; border: 1px solid #e53e3e; }
+    .oculto { display: none !important; }
+
+    .pie-demo { display: flex; gap: 8px; margin-top: 12px; }
+    .pie-demo .boton { margin-top: 0; }
+    .margen-arriba { margin-top: 14px; }
+
+    /* Modal / Pop-up */
+    .modal-fondo {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal-caja {
+      background: var(--tarjeta);
+      border: 1px solid var(--borde);
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+    .modal-icono { font-size: 40px; margin-bottom: 8px; }
+    .modal-caja h3 { margin: 0 0 10px; color: #ffffff; font-size: 20px; }
+    .modal-caja p { color: var(--texto-suave); font-size: 14px; margin-bottom: 20px; line-height: 1.4; }
+
+    @media (max-width: 768px) {
+      #form-registro { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+      #form-registro { grid-template-columns: 1fr; }
+      .pestanas { flex-direction: column; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="contenedor">
+
+    <nav class="pestanas">
+      <button type="button" class="pestana activo" data-vista="registro">Crear cuenta</button>
+      <button type="button" class="pestana" data-vista="login">Iniciar sesión</button>
+    </nav>
+
+    <!-- ===== VISTA 1: REGISTRO ===== -->
+    <section class="vista activa" id="vista-registro">
+      <div class="tarjeta">
+        <form id="form-registro" novalidate>
+          <div class="campo">
+            <label for="reg-nombre">Nombre completo</label>
+            <input type="text" id="reg-nombre" maxlength="50" autocomplete="name" />
+            <small class="error" id="error-reg-nombre"></small>
+          </div>
+
+          <div class="campo">
+            <label for="reg-correo">Correo electrónico</label>
+            <input type="email" id="reg-correo" maxlength="50" autocomplete="email" />
+            <small class="error" id="error-reg-correo"></small>
+          </div>
+
+          <div class="campo">
+            <label for="reg-usuario">Nombre de usuario</label>
+            <input type="text" id="reg-usuario" maxlength="20" autocomplete="username" />
+            <small class="error" id="error-reg-usuario"></small>
+          </div>
+
+          <div class="campo">
+            <label for="reg-telefono">Teléfono (10 dígitos)</label>
+            <input type="tel" id="reg-telefono" maxlength="10" inputmode="numeric" autocomplete="tel" />
+            <small class="error" id="error-reg-telefono"></small>
+          </div>
+
+          <div class="campo">
+            <label for="reg-fecha">Fecha de nacimiento</label>
+            <input type="date" id="reg-fecha" />
+            <small class="error" id="error-reg-fecha"></small>
+          </div>
+
+          <div class="campo">
+            <label for="reg-documento">Número de documento</label>
+            <input type="text" inputmode="numeric" id="reg-documento" maxlength="10" />
+            <small class="error" id="error-reg-documento"></small>
+          </div>
+
+          <div class="campo">
+            <label for="reg-clave">Contraseña (6 a 12 caract.)</label>
+            <div class="con-boton">
+              <input type="password" id="reg-clave" maxlength="12" autocomplete="new-password" />
+              <button type="button" class="btn-ver" data-objetivo="reg-clave" title="Ver contraseña">👁</button>
+            </div>
+            <div class="medidor">
+              <div class="medidor-barra"><div class="medidor-relleno" id="medidor-reg-relleno"></div></div>
+              <span class="medidor-texto" id="medidor-reg-texto"></span>
+            </div>
+            <small class="error" id="error-reg-clave"></small>
+          </div>
+
+          <div class="campo">
+            <label for="reg-clave2">Confirmar contraseña</label>
+            <div class="con-boton">
+              <input type="password" id="reg-clave2" maxlength="12" autocomplete="new-password" />
+              <button type="button" class="btn-ver" data-objetivo="reg-clave2" title="Ver contraseña">👁</button>
+            </div>
+            <div class="medidor">
+              <div class="medidor-barra"><div class="medidor-relleno" id="medidor-reg2-relleno"></div></div>
+              <span class="medidor-texto" id="medidor-reg2-texto"></span>
+            </div>
+            <small class="error" id="error-reg-clave2"></small>
+          </div>
+
+          <div class="campo fila-check">
+            <input type="checkbox" id="reg-terminos" />
+            <label for="reg-terminos">Acepto los términos y el tratamiento de datos</label>
+            <small class="error" id="error-reg-terminos"></small>
+          </div>
+
+          <button type="submit" class="boton">Crear cuenta</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===== VISTA 2: INICIO DE SESIÓN ===== -->
+    <section class="vista" id="vista-login">
+      <div class="tarjeta" style="max-width: 440px; margin: 12px auto 0;">
+        <form id="form-login" novalidate>
+          <div class="campo" style="margin-bottom: 14px;">
+            <label for="log-usuario">Usuario o correo</label>
+            <input type="text" id="log-usuario" autocomplete="username" />
+            <small class="error" id="error-log-usuario"></small>
+          </div>
+
+          <div class="campo" style="margin-bottom: 14px;">
+            <label for="log-clave">Contraseña</label>
+            <div class="con-boton">
+              <input type="password" id="log-clave" autocomplete="current-password" />
+              <button type="button" class="btn-ver" data-objetivo="log-clave" title="Ver contraseña">👁</button>
+            </div>
+            <small class="error" id="error-log-clave"></small>
+          </div>
+
+          <button type="submit" class="boton">Iniciar sesión</button>
+
+          <div class="acciones-secundarias">
+            <button type="button" class="enlace" data-vista="recuperar">¿Olvidaste tu contraseña?</button>
+          </div>
+
+          <div class="alerta peligro oculto" id="log-bloqueo"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===== VISTA 3: CÓDIGO 2FA ===== -->
+    <section class="vista" id="vista-2fa">
+      <div class="tarjeta" style="max-width: 440px; margin: 12px auto 0;">
+        <form id="form-2fa" novalidate>
+          <div class="campo" style="margin-bottom: 14px;">
+            <label for="fa-codigo">Código de verificación (6 dígitos)</label>
+            <input type="text" inputmode="numeric" id="fa-codigo" maxlength="6" />
+            <small class="error" id="error-fa-codigo"></small>
+          </div>
+
+          <div class="alerta info">
+            Te enviamos un código de 6 dígitos al correo registrado. Revisa la bandeja de entrada y spam.
+          </div>
+
+          <div class="alerta oculto" id="fa-aviso"></div>
+
+          <button type="submit" class="boton">Verificar código</button>
+
+          <div class="acciones-secundarias">
+            <button type="button" class="enlace" id="btn-reenviar">Reenviar código</button>
+            <button type="button" class="enlace" data-vista="login">Volver al inicio de sesión</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===== VISTA 4: RECUPERAR CONTRASEÑA ===== -->
+    <section class="vista" id="vista-recuperar">
+      <div class="tarjeta" style="max-width: 440px; margin: 12px auto 0;">
+        <form id="form-recuperar" novalidate>
+          <div class="campo" style="margin-bottom: 14px;">
+            <label for="rec-correo">Correo de la cuenta</label>
+            <input type="email" id="rec-correo" maxlength="50" autocomplete="email" />
+            <small class="error" id="error-rec-correo"></small>
+          </div>
+
+          <button type="button" class="boton" id="btn-enviar-codigo">Enviar código al correo</button>
+
+          <div class="campo margen-arriba" style="margin-bottom: 14px;">
+            <label for="rec-codigo">Código de verificación (llegó al correo)</label>
+            <input type="text" inputmode="numeric" id="rec-codigo" maxlength="6" />
+            <small class="error" id="error-rec-codigo"></small>
+          </div>
+
+          <button type="submit" class="boton">Verificar código</button>
+
+          <div class="acciones-secundarias">
+            <button type="button" class="enlace" data-vista="login">Volver al inicio de sesión</button>
+          </div>
+
+          <div class="alerta info oculto" id="rec-mensaje"></div>
+          <div class="alerta peligro oculto" id="rec-aviso"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- ===== VISTA 5: NUEVA CONTRASEÑA ===== -->
+    <section class="vista" id="vista-nueva">
+      <div class="tarjeta" style="max-width: 440px; margin: 12px auto 0;">
+        <form id="form-nueva" novalidate>
+          <div class="campo" style="margin-bottom: 14px;">
+            <label for="nueva-clave">Nueva contraseña (6 a 12 caracteres)</label>
+            <div class="con-boton">
+              <input type="password" id="nueva-clave" maxlength="12" autocomplete="new-password" />
+              <button type="button" class="btn-ver" data-objetivo="nueva-clave" title="Ver contraseña">👁</button>
+            </div>
+            <div class="medidor">
+              <div class="medidor-barra"><div class="medidor-relleno" id="medidor-nueva-relleno"></div></div>
+              <span class="medidor-texto" id="medidor-nueva-texto"></span>
+            </div>
+            <small class="error" id="error-nueva-clave"></small>
+          </div>
+
+          <div class="campo" style="margin-bottom: 14px;">
+            <label for="nueva-clave2">Confirmar nueva contraseña</label>
+            <div class="con-boton">
+              <input type="password" id="nueva-clave2" maxlength="12" autocomplete="new-password" />
+              <button type="button" class="btn-ver" data-objetivo="nueva-clave2" title="Ver contraseña">👁</button>
+            </div>
+            <div class="medidor">
+              <div class="medidor-barra"><div class="medidor-relleno" id="medidor-nueva2-relleno"></div></div>
+              <span class="medidor-texto" id="medidor-nueva2-texto"></span>
+            </div>
+            <small class="error" id="error-nueva-clave2"></small>
+          </div>
+
+          <button type="submit" class="boton">Guardar contraseña</button>
+        </form>
+      </div>
+    </section>
+
+    <div class="pie-demo">
+      <button type="button" class="boton boton-secundario" id="btn-demo">Rellenar datos de prueba</button>
+      <button type="button" class="boton boton-secundario" id="btn-reiniciar">Borrar datos de la demo</button>
+    </div>
+
+    <!-- POP-UP DE ÉXITO -->
+    <div class="modal-fondo oculto" id="modal-exito">
+      <div class="modal-caja">
+        <div class="modal-icono">✅</div>
+        <h3>¡Cambio de contraseña exitoso!</h3>
+        <p>Tu contraseña ha sido actualizada correctamente. Ya puedes iniciar sesión con tus nuevas credenciales.</p>
+        <button type="button" class="boton" id="btn-modal-aceptar">Aceptar e iniciar sesión</button>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  <script>
+    window.CONFIG_EMAILJS = {
+      serviceId: "service_wbhkj0s",
+      templateId: "template_y8405ls",
+      publicKey: "Q__nBKHLuGex99l7F"
+    };
+  </script>
+
+  <script>
+    // ============================================================
+    // MÓDULO DE VALIDACIONES ESTRICTAS
+    // ============================================================
+    const Validaciones = {
+      PROHIBIDOS_CLAVE: /[><&\\"']/g,
+
+      tieneEspacioInicial(valor) {
+        return /^\s/.test(valor);
+      },
+
+      nombreCompleto(valor) {
+        if (!valor || valor.trim() === "") return { ok: false, mensaje: "El nombre es obligatorio." };
+        if (this.tieneEspacioInicial(valor)) return { ok: false, mensaje: "No se permiten espacios al inicio." };
+        const v = valor.trim();
+        if (v.length < 2 || v.length > 50) return { ok: false, mensaje: "Entre 2 y 50 caracteres." };
+        if (!/^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ' -]+$/.test(v)) return { ok: false, mensaje: "Solo letras y espacios." };
+        return { ok: true, valor: v };
+      },
+
+      correo(valor) {
+        if (!valor || valor.trim() === "") return { ok: false, mensaje: "El correo es obligatorio." };
+        if (this.tieneEspacioInicial(valor)) return { ok: false, mensaje: "No se permiten espacios al inicio." };
+        const v = valor.trim().toLowerCase();
+        if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(v)) {
+          return { ok: false, mensaje: "Ingresa un correo electrónico adecuado." };
+        }
+        return { ok: true, valor: v };
+      },
+
+      nombreUsuario(valor) {
+        if (!valor || valor.trim() === "") return { ok: false, mensaje: "El usuario es obligatorio." };
+        if (this.tieneEspacioInicial(valor)) return { ok: false, mensaje: "No se permiten espacios al inicio." };
+        const v = valor.trim();
+        if (!/^[A-Za-z0-9_-]+$/.test(v)) return { ok: false, mensaje: "Solo letras, números o guiones." };
+        return { ok: true, valor: v };
+      },
+
+      telefono(valor) {
+        if (!valor || valor.trim() === "") return { ok: false, mensaje: "El teléfono es obligatorio." };
+        if (this.tieneEspacioInicial(valor)) return { ok: false, mensaje: "No se permiten espacios al inicio." };
+        const v = valor.trim();
+        if (!/^\d+$/.test(v)) return { ok: false, mensaje: "Solo se permiten números, no letras." };
+        if (v.length !== 10) return { ok: false, mensaje: "Debe ingresar exactamente 10 dígitos." };
+        return { ok: true, valor: "+57" + v };
+      },
+
+      documento(valor) {
+        if (!valor || valor.trim() === "") return { ok: false, mensaje: "El documento es obligatorio." };
+        if (this.tieneEspacioInicial(valor)) return { ok: false, mensaje: "No se permiten espacios al inicio." };
+        const v = valor.trim();
+        if (!/^\d+$/.test(v)) return { ok: false, mensaje: "Solo se permiten números, no letras." };
+        if (v.length < 6 || v.length > 10) return { ok: false, mensaje: "Entre 6 y 10 dígitos." };
+        return { ok: true, valor: v };
+      },
+
+      fechaNacimiento(valor) {
+        if (!valor) return { ok: false, mensaje: "La fecha es obligatoria." };
+        const fechaNac = new Date(valor);
+        const hoy = new Date();
+        if (isNaN(fechaNac.getTime())) return { ok: false, mensaje: "Fecha inválida." };
+
+        let edad = hoy.getFullYear() - fechaNac.getFullYear();
+        const m = hoy.getMonth() - fechaNac.getMonth();
+        if (m < 0 || (m === 0 && hoy.getDate() < fechaNac.getDate())) {
+          edad--;
+        }
+
+        if (edad < 18) {
+          return { ok: false, mensaje: "Debes ser mayor de 18 años para registrarte." };
+        }
+        return { ok: true, valor: valor };
+      },
+
+      contrasena(valor) {
+        if (!valor) return { ok: false, mensaje: "La contraseña es obligatoria." };
+        if (this.tieneEspacioInicial(valor)) return { ok: false, mensaje: "No se permiten espacios al inicio." };
+        
+        if (valor.length < 6 || valor.length > 12) {
+          return { ok: false, mensaje: "Debe tener entre 6 y 12 caracteres." };
+        }
+        if (this.PROHIBIDOS_CLAVE.test(valor)) {
+          return { ok: false, mensaje: "No permite caracteres especiales excepto >< & \\ \" ' " };
+        }
+        if (!/[A-Z]/.test(valor)) {
+          return { ok: false, mensaje: "Debe contener al menos una letra mayúscula." };
+        }
+        if (!/[a-z]/.test(valor)) {
+          return { ok: false, mensaje: "Debe contener al menos una letra minúscula." };
+        }
+        if (!/\d/.test(valor)) {
+          return { ok: false, mensaje: "Debe contener al menos un número." };
+        }
+        if (!/[^A-Za-z0-9]/.test(valor)) {
+          return { ok: false, mensaje: "Debe contener al menos un carácter especial." };
+        }
+        return { ok: true, valor: valor };
+      },
+
+      fortaleza(valor) {
+        let puntos = 0;
+        if (valor.length >= 6) puntos++;
+        if (/[a-z]/.test(valor) && /[A-Z]/.test(valor)) puntos++;
+        if (/\d/.test(valor)) puntos++;
+        if (/[^A-Za-z0-9]/.test(valor) && !this.PROHIBIDOS_CLAVE.test(valor)) puntos++;
+        return puntos;
+      }
+    };
+  </script>
+
+  <script>
+    const Servidor = (function () {
+      "use strict";
+      const CLAVE_DB = "demo_usuarios";
+
+      function leerDB() {
+        try { return JSON.parse(localStorage.getItem(CLAVE_DB)) || []; } catch { return []; }
+      }
+      function escribirDB(lista) { localStorage.setItem(CLAVE_DB, JSON.stringify(lista)); }
+      function leerSession(clave) {
+        try { return JSON.parse(sessionStorage.getItem(clave)); } catch { return null; }
+      }
+      function escribirSession(clave, valor) { sessionStorage.setItem(clave, JSON.stringify(valor)); }
+
+      async function hash(texto) {
+        if (window.crypto && window.crypto.subtle) {
+          const bytes = new TextEncoder().encode(texto);
+          const buffer = await window.crypto.subtle.digest("SHA-256", bytes);
+          return Array.from(new Uint8Array(buffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
+        }
+        return "fnv-" + texto.length;
+      }
+
+      async function enviarCorreoCodigo(destinatario, nombre, codigo, minutos) {
+        if (!window.emailjs) return { ok: false, error: "EmailJS no cargó." };
+        try {
+          await window.emailjs.send(
+            window.CONFIG_EMAILJS.serviceId,
+            window.CONFIG_EMAILJS.templateId,
+            { to_email: destinatario, to_name: nombre, codigo: codigo, minutos: minutos },
+            { publicKey: window.CONFIG_EMAILJS.publicKey }
+          );
+          return { ok: true };
+        } catch (e) {
+          return { ok: false, error: e?.text || String(e) };
+        }
+      }
+
+      return {
+        async registrar(datos) {
+          const db = leerDB();
+          if (db.some(u => u.correo === datos.correo)) {
+            return { ok: false, campo: "reg-correo", mensaje: "Este correo ya está registrado." };
+          }
+          if (db.some(u => u.usuario.toLowerCase() === datos.usuario.toLowerCase())) {
+            return { ok: false, campo: "reg-usuario", mensaje: "Este nombre de usuario ya está ocupado." };
+          }
+
+          const nuevo = {
+            id: String(Date.now()),
+            nombre: datos.nombre, correo: datos.correo, usuario: datos.usuario,
+            telefono: datos.telefono, fecha: datos.fecha, documento: datos.documento,
+            hash: await hash(datos.clave)
+          };
+          db.push(nuevo);
+          escribirDB(db);
+          return { ok: true, usuario: nuevo };
+        },
+        async iniciarSesion(identidad, clave) {
+          const db = leerDB();
+          const buscada = String(identidad).trim().toLowerCase();
+          const usuario = db.find((u) => u.correo === buscada || u.usuario.toLowerCase() === buscada);
+          if (!usuario || usuario.hash !== (await hash(clave))) {
+            return { ok: false, mensaje: "Usuario o contraseña incorrectos." };
+          }
+          const codigo = String(Math.floor(100000 + Math.random() * 900000));
+          const envio = await enviarCorreoCodigo(usuario.correo, usuario.nombre, codigo, "5");
+          if (!envio.ok) return { ok: false, mensaje: "Error al enviar código: " + envio.error };
+          escribirSession("demo_2fa", { correo: usuario.correo, codigo: codigo, creadoEn: Date.now() });
+          return { ok: true };
+        },
+        verificar2FA(codigoIngresado) {
+          const datos = leerSession("demo_2fa");
+          if (!datos || String(codigoIngresado).trim() !== datos.codigo) return { ok: false, mensaje: "Código incorrecto." };
+          sessionStorage.removeItem("demo_2fa");
+          escribirSession("demo_sesion", { correo: datos.correo, iniciadaEn: Date.now() });
+          return { ok: true };
+        },
+        async solicitarRecuperacion(correoIngresado) {
+          const buscado = String(correoIngresado).trim().toLowerCase();
+          const usuario = leerDB().find((u) => u.correo === buscado);
+
+          if (!usuario) {
+            return { ok: false, registrado: false, mensaje: "Correo NO registrado" };
+          }
+
+          const codigo = String(Math.floor(100000 + Math.random() * 900000));
+          const envio = await enviarCorreoCodigo(usuario.correo, usuario.nombre, codigo, "30");
+          if (!envio.ok) return { ok: false, registrado: true, error: envio.error };
+
+          escribirSession("demo_recuperacion", { correo: usuario.correo, codigo: codigo, creadoEn: Date.now(), verificado: false });
+          return { ok: true, registrado: true, mensaje: "Recibirás un código de seguridad en tu bandeja de entrada" };
+        },
+        verificarCodigoRecuperacion(codigo) {
+          const datos = leerSession("demo_recuperacion");
+          if (!datos || String(codigo).trim() !== datos.codigo) return { ok: false, mensaje: "Código erróneo." };
+          datos.verificado = true;
+          escribirSession("demo_recuperacion", datos);
+          return { ok: true };
+        },
+        async restablecerContrasena(clave) {
+          const datos = leerSession("demo_recuperacion");
+          if (!datos || !datos.verificado) return { ok: false, campo: "nueva-clave", mensaje: "Verifica el código primero." };
+          const db = leerDB();
+          const usuario = db.find((u) => u.correo === datos.correo);
+          usuario.hash = await hash(clave);
+          escribirDB(db);
+          sessionStorage.removeItem("demo_recuperacion");
+          return { ok: true };
+        },
+        crearSesion(correo) { escribirSession("demo_sesion", { correo: String(correo).toLowerCase(), iniciadaEn: Date.now() }); },
+        sesionActual() { return leerSession("demo_sesion"); },
+        reiniciarDemo() { localStorage.removeItem(CLAVE_DB); sessionStorage.clear(); }
+      };
+    })();
+  </script>
+
+  <script>
+    (function () {
+      "use strict";
+      const $ = (selector) => document.querySelector(selector);
+      const $$ = (selector) => Array.from(document.querySelectorAll(selector));
+
+      function ponerError(idCampo, mensaje) {
+        $("#" + idCampo)?.classList.add("invalido");
+        const aviso = $("#error-" + idCampo);
+        if (aviso) aviso.textContent = mensaje;
+      }
+
+      function limpiarErrores(formulario) {
+        formulario.querySelectorAll(".invalido").forEach((el) => el.classList.remove("invalido"));
+        formulario.querySelectorAll(".error").forEach((el) => { el.textContent = ""; });
+      }
+
+      function mostrarVista(nombre) {
+        $$(".vista").forEach((v) => v.classList.remove("activa"));
+        $("#vista-" + nombre)?.classList.add("activa");
+        $$(".pestana").forEach((p) => p.classList.toggle("activo", p.dataset.vista === nombre));
+      }
+
+      /* RESTRICCIONES EN TIEMPO REAL (INPUTS) */
+      function sinEspacioInicialInput(e) {
+        if (e.target.value.startsWith(" ")) {
+          e.target.value = e.target.value.trimStart();
+        }
+      }
+
+      function soloNumerosInput(e) {
+        e.target.value = e.target.value.replace(/\D/g, "");
+      }
+
+      // Bloquear espacios al inicio en todos los campos de texto
+      $$('input[type="text"], input[type="email"], input[type="password"]').forEach((input) => {
+        input.addEventListener("input", sinEspacioInicialInput);
+      });
+
+      // Bloquear letras en teléfono y documento
+      $("#reg-telefono").addEventListener("input", soloNumerosInput);
+      $("#reg-documento").addEventListener("input", soloNumerosInput);
+
+      $$("[data-vista]").forEach((boton) => {
+        boton.addEventListener("click", () => mostrarVista(boton.dataset.vista));
+      });
+
+      $$(".btn-ver").forEach((boton) => {
+        boton.addEventListener("click", () => {
+          const campo = $("#" + boton.dataset.objetivo);
+          if (!campo) return;
+          const visible = campo.type === "text";
+          campo.type = visible ? "password" : "text";
+          boton.textContent = visible ? "👁" : "⦸";
+          campo.focus();
+        });
+      });
+
+      function activarMedidor(idCampo, prefijo) {
+        const campo = $("#" + idCampo);
+        if (!campo) return;
+        campo.addEventListener("input", (e) => {
+          const puntos = Validaciones.fortaleza(e.target.value);
+          const niveles = [
+            { ancho: "0%", color: "transparent", texto: "" },
+            { ancho: "25%", color: "#e53e3e", texto: "Muy débil" },
+            { ancho: "50%", color: "#dd6b20", texto: "Débil" },
+            { ancho: "75%", color: "#d69e2e", texto: "Aceptable" },
+            { ancho: "100%", color: "#38a169", texto: "Fuerte" }
+          ];
+          const nivel = niveles[puntos];
+          const relleno = $("#" + prefijo + "-relleno");
+          if (relleno) {
+            relleno.style.width = nivel.ancho;
+            relleno.style.background = nivel.color;
+          }
+          const texto = $("#" + prefijo + "-texto");
+          if (texto) {
+            texto.textContent = e.target.value ? nivel.texto : "";
+          }
+        });
+      }
+
+      activarMedidor("reg-clave", "medidor-reg");
+      activarMedidor("reg-clave2", "medidor-reg2");
+      activarMedidor("nueva-clave", "medidor-nueva");
+      activarMedidor("nueva-clave2", "medidor-nueva2");
+
+      /* SUBMIT REGISTRO CON VALIDACIONES COMPLETAS */
+      $("#form-registro").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        limpiarErrores($("#form-registro"));
+
+        let conErrores = false;
+
+        const valNombre = Validaciones.nombreCompleto($("#reg-nombre").value);
+        if (!valNombre.ok) { ponerError("reg-nombre", valNombre.mensaje); conErrores = true; }
+
+        const valCorreo = Validaciones.correo($("#reg-correo").value);
+        if (!valCorreo.ok) { ponerError("reg-correo", valCorreo.mensaje); conErrores = true; }
+
+        const valUsuario = Validaciones.nombreUsuario($("#reg-usuario").value);
+        if (!valUsuario.ok) { ponerError("reg-usuario", valUsuario.mensaje); conErrores = true; }
+
+        const valTel = Validaciones.telefono($("#reg-telefono").value);
+        if (!valTel.ok) { ponerError("reg-telefono", valTel.mensaje); conErrores = true; }
+
+        const valFecha = Validaciones.fechaNacimiento($("#reg-fecha").value);
+        if (!valFecha.ok) { ponerError("reg-fecha", valFecha.mensaje); conErrores = true; }
+
+        const valDoc = Validaciones.documento($("#reg-documento").value);
+        if (!valDoc.ok) { ponerError("reg-documento", valDoc.mensaje); conErrores = true; }
+
+        const valClave = Validaciones.contrasena($("#reg-clave").value);
+        if (!valClave.ok) { ponerError("reg-clave", valClave.mensaje); conErrores = true; }
+
+        const clave2 = $("#reg-clave2").value;
+        if (!clave2) {
+          ponerError("reg-clave2", "Confirma la contraseña.");
+          conErrores = true;
+        } else if (valClave.ok && clave2 !== $("#reg-clave").value) {
+          ponerError("reg-clave2", "Las contraseñas no coinciden.");
+          conErrores = true;
+        }
+
+        if (!$("#reg-terminos").checked) {
+          ponerError("reg-terminos", "Debes aceptar los términos.");
+          conErrores = true;
+        }
+
+        if (conErrores) return;
+
+        const datos = {
+          nombre: valNombre.valor,
+          correo: valCorreo.valor,
+          usuario: valUsuario.valor,
+          telefono: valTel.valor,
+          fecha: valFecha.valor,
+          documento: valDoc.valor,
+          clave: valClave.valor
+        };
+
+        const res = await Servidor.registrar(datos);
+        if (res.ok) {
+          Servidor.crearSesion(res.usuario.correo);
+          window.location.href = "index.html";
+        } else {
+          ponerError(res.campo, res.mensaje);
+        }
+      });
+
+      $("#form-login").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        limpiarErrores($("#form-login"));
+        const res = await Servidor.iniciarSesion($("#log-usuario").value, $("#log-clave").value);
+        if (res.ok) mostrarVista("2fa");
+        else ponerError("log-clave", res.mensaje);
+      });
+
+      $("#form-2fa").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const res = Servidor.verificar2FA($("#fa-codigo").value);
+        if (res.ok) window.location.href = "index.html";
+        else ponerError("fa-codigo", res.mensaje);
+      });
+
+      $("#btn-enviar-codigo").addEventListener("click", async () => {
+        limpiarErrores($("#form-recuperar"));
+        const avisoMsg = $("#rec-mensaje");
+        const avisoErr = $("#rec-aviso");
+
+        avisoMsg.classList.add("oculto");
+        avisoErr.classList.add("oculto");
+
+        const correoVal = Validaciones.correo($("#rec-correo").value);
+        if (!correoVal.ok) {
+          ponerError("rec-correo", correoVal.mensaje);
+          return;
+        }
+
+        const boton = $("#btn-enviar-codigo");
+        boton.disabled = true;
+        boton.textContent = "Enviando…";
+
+        const respuesta = await Servidor.solicitarRecuperacion(correoVal.valor);
+
+        boton.disabled = false;
+        boton.textContent = "Enviar código al correo";
+
+        if (!respuesta.ok) {
+          if (respuesta.registrado === false) {
+            avisoErr.textContent = respuesta.mensaje;
+            avisoErr.classList.remove("oculto");
+          } else {
+            avisoErr.textContent = "Error al enviar el correo: " + respuesta.error;
+            avisoErr.classList.remove("oculto");
+          }
+          return;
+        }
+
+        avisoMsg.textContent = respuesta.mensaje;
+        avisoMsg.classList.remove("oculto");
+        $("#rec-codigo").focus();
+      });
+
+      $("#form-recuperar").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const res = Servidor.verificarCodigoRecuperacion($("#rec-codigo").value);
+        if (res.ok) mostrarVista("nueva");
+        else ponerError("rec-codigo", res.mensaje);
+      });
+
+      /* SUBMIT NUEVA CONTRASEÑA CON VALIDACIONES */
+      $("#form-nueva").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        limpiarErrores($("#form-nueva"));
+
+        const valClave = Validaciones.contrasena($("#nueva-clave").value);
+        if (!valClave.ok) {
+          ponerError("nueva-clave", valClave.mensaje);
+          return;
+        }
+
+        const clave2 = $("#nueva-clave2").value;
+        if (clave2 !== $("#nueva-clave").value) {
+          ponerError("nueva-clave2", "Las contraseñas no coinciden.");
+          return;
+        }
+
+        const res = await Servidor.restablecerContrasena(valClave.valor);
+        if (!res.ok) {
+          ponerError(res.campo || "nueva-clave", res.mensaje);
+          return;
+        }
+
+        $("#modal-exito").classList.remove("oculto");
+      });
+
+      $("#btn-modal-aceptar").addEventListener("click", () => {
+        $("#modal-exito").classList.add("oculto");
+        mostrarVista("login");
+      });
+
+      $("#btn-demo").addEventListener("click", () => {
+        mostrarVista("registro");
+        $("#reg-nombre").value = "Juan David Rojas";
+        $("#reg-correo").value = "juandarojas17@gmail.com";
+        $("#reg-usuario").value = "juandarojas17";
+        $("#reg-telefono").value = "3001234567";
+        $("#reg-fecha").value = "1995-05-15";
+        $("#reg-documento").value = "1030456789";
+        $("#reg-clave").value = "Clave#2026x";
+        $("#reg-clave2").value = "Clave#2026x";
+        $("#reg-terminos").checked = true;
+
+        $("#reg-clave").dispatchEvent(new Event("input"));
+        $("#reg-clave2").dispatchEvent(new Event("input"));
+      });
+
+      $("#btn-reiniciar").addEventListener("click", () => {
+        Servidor.reiniciarDemo();
+        location.reload();
+      });
+
+      if (Servidor.sesionActual()) {
+        window.location.replace("index.html");
+      } else {
+        if (window.location.hash === "#login") {
+          mostrarVista("login");
+        } else {
+          mostrarVista("registro");
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
